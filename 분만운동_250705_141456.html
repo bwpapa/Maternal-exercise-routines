@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>39주차 산모 운동 루틴</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scrolling */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden; /* Prevent horizontal scroll from body */
+        }
+        .container {
+            width: 100%;
+            max-width: 768px; /* Max width for desktop, fluid for mobile */
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+        .main-title {
+            font-size: 2rem; /* Larger main title */
+            font-weight: 700;
+            color: #2c3e50; /* Darker text for titles */
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .navigation-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .navigation-controls button {
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6; /* Blue */
+            color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .navigation-controls button:hover:not(:disabled) {
+            background-color: #2563eb; /* Darker blue */
+            transform: translateY(-1px);
+        }
+        .navigation-controls button:disabled {
+            background-color: #9ca3af; /* Gray for disabled */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #currentDateDisplay {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: center;
+            flex-grow: 1; /* Allows date to take available space */
+        }
+        #routine-display-wrapper {
+            position: relative;
+            overflow: hidden; /* Hide overflowing date sections */
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            background-color: #fcfcfc; /* Background for the entire displayed page */
+        }
+        #routine-checklist-container {
+            display: flex; /* Use flex for horizontal arrangement */
+            width: 100%; /* This will be 100% of its parent (#routine-display-wrapper) */
+            transition: transform 0.3s ease-in-out; /* Smooth sliding transition */
+        }
+        .date-section {
+            flex-shrink: 0; /* Prevents items from shrinking */
+            flex-basis: 100%; /* Each item takes 100% of the flex container's width */
+            box-sizing: border-box;
+            padding: 1.25rem; /* Padding for the content inside each date page */
+        }
+        .date-header {
+            font-size: 1.75rem; /* Date title size */
+            font-weight: 700;
+            color: #1a202c; /* Darker text */
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #edf2f7; /* Light gray border */
+            padding-bottom: 0.75rem;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 1.25rem; /* Smaller section title within date */
+            font-weight: 600;
+            color: #4a5568; /* Grayish text for subtitles */
+            margin-top: 1rem;
+            margin-bottom: 0.75rem;
+            padding-left: 0.5rem;
+        }
+        .exercise-item {
+            display: flex;
+            align-items: center;
+            background-color: #f8fafc; /* Lighter background for items */
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .exercise-item:hover {
+            transform: translateY(-2px);
+        }
+        .exercise-item.completed {
+            background-color: #e6fffa; /* Light green for completed */
+            opacity: 0.8;
+        }
+        .checkbox-container {
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #cbd5e0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .checkbox.checked {
+            background-color: #48bb78; /* Green for checked */
+            border-color: #48bb78;
+        }
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .exercise-details {
+            flex-grow: 1;
+        }
+        .exercise-name {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.25rem;
+        }
+        .exercise-description {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        .info-box {
+            background-color: #fffbeb; /* Light yellow for info */
+            border-left: 4px solid #f6ad55; /* Orange border */
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            color: #9c5c00;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+                margin: 10px;
+            }
+            .main-title {
+                font-size: 1.75rem;
+            }
+            .navigation-controls button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            #currentDateDisplay {
+                font-size: 1.25rem;
+            }
+            .date-header {
+                font-size: 1.5rem;
+            }
+            .section-title {
+                font-size: 1.1rem;
+            }
+            .exercise-item {
+                padding: 0.75rem;
+            }
+            .exercise-name {
+                font-size: 0.95rem;
+            }
+            .exercise-description {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">39주차 산모 운동 루틴</h1>
+        <div class="info-box">
+            <strong>중요:</strong> 이 루틴은 일반적인 가이드라인이며, 반드시 본인의 몸 상태와 컨디션을 최우선으로 고려해야 합니다. 통증이나 불편함이 느껴지면 즉시 중단하고 의료진과 상담하세요. 모든 운동 전후에는 가벼운 스트레칭으로 몸을 충분히 풀어주세요.
+        </div>
+
+        <div class="navigation-controls">
+            <button id="prevDayBtn">이전 날짜</button>
+            <span id="currentDateDisplay"></span>
+            <button id="nextDayBtn">다음 날짜</button>
+        </div>
+
+        <div id="routine-display-wrapper">
+            <div id="routine-checklist-container">
+                <!-- Daily routine sections will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration and initialization
+        // __app_id and __firebase_config are global variables provided by the Canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let app;
+        let db;
+        let auth;
+        let userId = 'anonymous'; // Default to anonymous
+
+        // Initialize Firebase and set up authentication
+        const initializeFirebase = async () => {
+            try {
+                if (Object.keys(firebaseConfig).length > 0) {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    // Sign in with custom token if available, otherwise anonymously
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+
+                    // Listen for auth state changes to get the user ID
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            console.log("User ID:", userId);
+                            // Once authenticated, load and display the routine
+                            loadRoutineProgress();
+                        } else {
+                            // User is signed out, or not yet signed in
+                            userId = crypto.randomUUID(); // Use a random ID for unauthenticated users
+                            console.log("No user signed in. Using random ID:", userId);
+                            loadRoutineProgress(); // Load routine even for anonymous users
+                        }
+                    });
+                } else {
+                    console.warn("Firebase config is not available. Running without Firebase features.");
+                    loadRoutineProgress(); // Run without Firebase if config is missing
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                loadRoutineProgress(); // Continue to load routine even if Firebase init fails
+            }
+        };
+
+        // Define the exercise routine data
+        const routine = {
+            morning: [
+                { name: "가벼운 스트레칭", description: "목, 어깨, 팔, 다리 등 전신 부드럽게 늘리기 (5-10분)", id: "morning-stretch" },
+                { name: "골반 기울이기 또는 고양이 자세", description: "10-15회 반복, 2-3세트", id: "morning-pelvic-cat" }
+            ],
+            afternoon: [
+                { name: "스쿼트 (벽/의자 스쿼트)", description: "10-15회 반복, 2-3세트", id: "afternoon-squats" },
+                { name: "나비 자세", description: "20-30초 유지, 3-5회 반복", id: "afternoon-butterfly" },
+                { name: "계단 오르내리기 (선택 사항)", description: "난간 잡고 천천히 5-10분 (무리하지 않게)", id: "afternoon-stairs" }
+            ],
+            evening: [
+                { name: "걷기 운동", description: "팔 흔들고 보폭 넓혀 30분 - 1시간 (나눠서 가능)", id: "evening-walk" },
+                { name: "마무리 스트레칭 및 이완", description: "다리, 허리, 골반 위주, 심호흡 (10-15분)", id: "evening-relax" }
+            ]
+        };
+
+        // Store completion status in a local object (will be synced with Firestore)
+        // Structure: { "YYYY-MM-DD": { "morning-stretch": true, "afternoon-squats": false, ... } }
+        let exerciseCompletionStatus = {};
+
+        // Function to generate dates from start to end
+        function getDates(startDate, endDate) {
+            const dates = [];
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                dates.push(currentDate.toISOString().split('T')[0]); // Format YYYY-MM-DD
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return dates;
+        }
+
+        // Define the date range for the checklist
+        const startDate = new Date('2025-07-05');
+        const endDate = new Date('2025-07-14');
+        const checklistDates = getDates(startDate, endDate);
+        let currentDateIndex = 0; // Index of the currently displayed date
+
+        // DOM elements
+        const checklistContainer = document.getElementById('routine-checklist-container');
+        const currentDateDisplay = document.getElementById('currentDateDisplay');
+        const prevDayBtn = document.getElementById('prevDayBtn');
+        const nextDayBtn = document.getElementById('nextDayBtn');
+        const routineDisplayWrapper = document.getElementById('routine-display-wrapper');
+
+        // Function to render exercises for all dates
+        function renderAllDateSections() {
+            if (!checklistContainer) return;
+
+            checklistContainer.innerHTML = ''; // Clear previous content
+            // The width of checklistContainer is now dynamically set by flex-basis on date-section
+            // and the transform property. No need to set width here.
+
+            checklistDates.forEach(date => {
+                const dateSection = document.createElement('div');
+                dateSection.className = 'date-section';
+                dateSection.innerHTML = `<h2 class="date-header">${date}</h2>`; // Date header inside each section
+
+                // Get current day's progress, or initialize if not present
+                const dailyProgress = exerciseCompletionStatus[date] || {};
+
+                Object.keys(routine).forEach(timeOfDay => {
+                    const timeOfDayName = {
+                        morning: '오전 운동',
+                        afternoon: '오후 운동',
+                        evening: '저녁 운동'
+                    }[timeOfDay];
+                    const timeOfDayDescription = {
+                        morning: '(기상 후 또는 아침 식사 후 1-2시간 뒤)',
+                        afternoon: '(점심 식사 후 2-3시간 뒤 또는 컨디션 좋을 때)',
+                        evening: '(저녁 식사 후 1-2시간 뒤, 잠들기 2시간 전)'
+                    }[timeOfDay];
+
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.innerHTML = `
+                        <h3 class="section-title">${timeOfDayName} <span class="text-base font-normal text-gray-500">${timeOfDayDescription}</span></h3>
+                    `;
+                    dateSection.appendChild(sectionDiv);
+
+                    routine[timeOfDay].forEach(exercise => {
+                        const isCompleted = dailyProgress[exercise.id] || false;
+                        const exerciseDiv = document.createElement('div');
+                        exerciseDiv.className = `exercise-item ${isCompleted ? 'completed' : ''}`;
+                        exerciseDiv.dataset.id = exercise.id;
+                        exerciseDiv.dataset.date = date; // Add date to dataset
+
+                        exerciseDiv.innerHTML = `
+                            <div class="checkbox-container">
+                                <div class="checkbox ${isCompleted ? 'checked' : ''}" data-id="${exercise.id}" data-date="${date}"></div>
+                            </div>
+                            <div class="exercise-details">
+                                <div class="exercise-name">${exercise.name}</div>
+                                <div class="exercise-description">${exercise.description}</div>
+                            </div>
+                        `;
+                        dateSection.appendChild(exerciseDiv);
+                    });
+                });
+                checklistContainer.appendChild(dateSection);
+            });
+            addCheckboxListeners();
+            updateDisplay(); // Update display after rendering all sections
+        }
+
+        // Function to update the displayed date and slide the content
+        function updateDisplay() {
+            if (!checklistContainer || !currentDateDisplay || !prevDayBtn || !nextDayBtn) return;
+
+            // Update current date display
+            currentDateDisplay.textContent = checklistDates[currentDateIndex];
+
+            // Slide the container. Each date-section has flex-basis: 100%, so we shift by 100% of the wrapper's width.
+            checklistContainer.style.transform = `translateX(-${currentDateIndex * 100}%)`;
+
+            // Enable/disable navigation buttons
+            prevDayBtn.disabled = currentDateIndex === 0;
+            nextDayBtn.disabled = currentDateIndex === checklistDates.length - 1;
+        }
+
+        // Function to navigate between dates
+        function navigateDate(direction) { // direction: -1 for prev, 1 for next
+            const newIndex = currentDateIndex + direction;
+            if (newIndex >= 0 && newIndex < checklistDates.length) {
+                currentDateIndex = newIndex;
+                updateDisplay();
+            }
+        }
+
+        // Add event listeners for navigation buttons
+        if (prevDayBtn) {
+            prevDayBtn.onclick = () => navigateDate(-1);
+        }
+        if (nextDayBtn) {
+            nextDayBtn.onclick = () => navigateDate(1);
+        }
+
+        // Function to add event listeners to checkboxes
+        function addCheckboxListeners() {
+            document.querySelectorAll('.checkbox').forEach(checkbox => {
+                checkbox.onclick = async (event) => {
+                    const exerciseId = event.target.dataset.id;
+                    const exerciseDate = event.target.dataset.date;
+
+                    if (exerciseId && exerciseDate) {
+                        // Ensure the date entry exists
+                        if (!exerciseCompletionStatus[exerciseDate]) {
+                            exerciseCompletionStatus[exerciseDate] = {};
+                        }
+
+                        const isCurrentlyCompleted = exerciseCompletionStatus[exerciseDate][exerciseId];
+                        exerciseCompletionStatus[exerciseDate][exerciseId] = !isCurrentlyCompleted;
+
+                        // Update UI immediately
+                        const parentItem = event.target.closest('.exercise-item');
+                        if (parentItem) {
+                            parentItem.classList.toggle('completed', !isCurrentlyCompleted);
+                            event.target.classList.toggle('checked', !isCurrentlyCompleted);
+                        }
+
+                        // Save to Firestore
+                        await saveRoutineProgress();
+                    }
+                };
+            });
+        }
+
+        // Function to save routine progress to Firestore
+        async function saveRoutineProgress() {
+            if (!db || !userId || userId === 'anonymous') {
+                console.warn("Firestore not initialized or user not authenticated. Cannot save progress.");
+                return;
+            }
+            try {
+                // Store private data: /artifacts/{appId}/users/{userId}/routine-progress/daily
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/routine-progress`, 'daily');
+                await setDoc(docRef, {
+                    timestamp: new Date(),
+                    progress: exerciseCompletionStatus // Save the entire daily progress object
+                });
+                console.log("Routine progress saved successfully!");
+            } catch (e) {
+                console.error("Error saving routine progress:", e);
+            }
+        }
+
+        // Function to load routine progress from Firestore
+        async function loadRoutineProgress() {
+            if (!db || !userId || userId === 'anonymous') {
+                console.warn("Firestore not initialized or user not authenticated. Cannot load progress.");
+                // Render with default (uncompleted) state if Firebase isn't ready
+                renderAllDateSections(); // Render all sections even without Firebase
+                return;
+            }
+            try {
+                // Listen for real-time updates using onSnapshot
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/routine-progress`, 'daily');
+                onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        exerciseCompletionStatus = data.progress || {};
+                        console.log("Routine progress loaded:", exerciseCompletionStatus);
+                    } else {
+                        console.log("No routine progress found for this user. Starting fresh.");
+                        exerciseCompletionStatus = {}; // Reset if no data
+                    }
+                    renderAllDateSections(); // Re-render after loading
+                }, (error) => {
+                    console.error("Error listening to routine progress:", error);
+                    renderAllDateSections(); // Render even if snapshot fails
+                });
+            } catch (e) {
+                console.error("Error setting up snapshot listener:", e);
+                renderAllDateSections(); // Render even if there's an error
+            }
+        }
+
+        // Initialize Firebase when the window loads
+        window.onload = initializeFirebase;
+    </script>
+</body>
+</html>
